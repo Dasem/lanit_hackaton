@@ -1,6 +1,6 @@
 import telebot
 from telebot.types import Message
-TOKEN = '926423911:AAEM8Wg7ycg1oGz8xNzqmNoxLOgU7BXhBBA'
+TOKEN = '997103341:AAHEFEGSl6LF4JMxGZus6cMzcQLlhsaHOVQ' # t.me/jrinderBot
 bot = telebot.TeleBot(TOKEN)
 
 proc = None
