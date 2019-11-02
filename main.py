@@ -35,7 +35,7 @@ def lunch_cleaner():
             # TODO: удалить ланч по id (lunch.id)
 
 
-schedule.every().minute.do()
+schedule.every().minute.do(lunch_cleaner)
 
 
 def shedule_helper():
