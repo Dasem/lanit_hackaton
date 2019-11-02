@@ -5,10 +5,44 @@ from telebot import types
 TOKEN = '1052618109:AAGCUts9_VvN97wyx8sKpii07eedU0F4mxw'
 bot = telebot.TeleBot(TOKEN)
 
+cities = ['Москва', 'Пермь', 'Челябинск', 'Омск', 'Уфа', 'Ижевск']
+
+# {chat_id: city}
+users = dict()
+
 proc = None
 
 
-@bot.message_handler(commands=['start', 'help'])
+@bot.message_handler(func=lambda message: message.chat.id not in users)
+def kit_start(message):
+    select_city(message)
+
+
+@bot.message_handler(commands=['start'])
+def city_change(message):
+    select_city(message)
+
+
+def select_city(message):
+    global users
+    global cities
+    keyboard = types.InlineKeyboardMarkup()
+    for city in cities:
+        keyboard.add(types.InlineKeyboardButton(city, callback_data='add_city:' + city))
+    bot.send_message(message.chat.id, "Выберите свой город",
+                     reply_markup=keyboard)
+
+
+@bot.callback_query_handler(func=lambda call: 'add_city' in call.data)
+def city_setter(call):
+    global users
+    city = call.data.split(':')[1]
+    users[call.message.chat.id] = city
+    bot.send_message(call.message.chat.id,
+                     "Вы выбрали город " + city + ", теперь ваши обеды будут проходить именно здесь!")
+
+
+@bot.message_handler(commands=['help'])
 def send_welcome(message):
     name = message.from_user.first_name
     bot.send_message(message.chat.id,
@@ -78,7 +112,8 @@ def query_handler(call):
 
 @bot.callback_query_handler(func=lambda call: call.data == 'pref')
 def query_handler(call):
-    bot.send_message(call.message.chat.id, 'Мы учтем ваши пожелания, а теперь выберите время в которое вы бы хотели пообедать')
+    bot.send_message(call.message.chat.id,
+                     'Мы учтем ваши пожелания, а теперь выберите время в которое вы бы хотели пообедать')
     # ToDo вбивает время, заявка закончилась
 
 
