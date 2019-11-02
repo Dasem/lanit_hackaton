@@ -18,7 +18,11 @@ def add(user_id, city, lunch_id):
                             (user_id, city, lunch_id))
     dao.get_connection().commit()
 
-
+"""
+    Возвращает информацию о пользователе по идентфикатору
+    - userId - идентификатор пользователя
+    Return user information by userId 
+ """
 def findById(userId):
     result = dao.getCursor().execute("""SELECT user_id, city, lunch_id FROM users WHERE user_id = ?""",
                                      [int(userId)]).fetchone()
@@ -28,18 +32,33 @@ def findById(userId):
     return user
 
 
+"""
+    Добавляет информацию о выбранном обеде для пользователя
+    - userId - идентификатор пользователя
+    - lunch_id - идентификатор, выбранного обеда
+    Add user to lunch 
+ """
 def joinLunch(user_id, lunch_id):
     dao.getCursor().execute("""UPDATE users SET lunch_id = ? WHERE user_id = ?""", (lunch_id, user_id))
     dao.get_connection().commit()
 
 
+"""
+    Удаляет информацию о выбранном обеде для пользователя
+    - userId - идентификатор пользователя
+    Leave lunch by user  
+ """
 def leaveLunch(user_id):
     # TODO добавить проверку не пытаемся ли мы выйти из собственного обеда
     dao.getCursor().execute("""UPDATE users SET lunch_id = ? WHERE user_id = ?""", (-1, user_id))
     dao.get_connection().commit()
 
 
-# Возвращает массив массивов
+"""
+    Возвращает информацию о всех пользователях, записавшихся на обед
+     - lunch_id - идентификатор обеда
+    Return users checked for lunch by id 
+ """
 def getAllByLunchId(lunchId):
     param = int(lunchId)
     result = dao.getCursor().execute("""SELECT user_id FROM users WHERE lunch_id = ?""",
