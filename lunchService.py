@@ -39,3 +39,6 @@ def getAllByUserId(userId):
         result.append(lunch)
 
     return result
+
+def getActiveByUserId(userId):
+
