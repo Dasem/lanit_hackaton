@@ -10,9 +10,9 @@ def findById(lunch_id):
     return lunch
 
 
-def add(id, time, owner_id, place, description):
-    dao.getCursor().execute("""INSERT INTO lunch (id, time, owner_id, place, description) VALUES (?, ?, ?, ?)""",
-                            (id, time, owner_id, place, description))
+def add(time, owner_id, place, description):
+    dao.getCursor().execute("""INSERT INTO lunch (time, owner_id, place, description) VALUES (?, ?, ?, ?)""",
+                            (time, owner_id, place, description))
     dao.get_connection().commit()
 
 
