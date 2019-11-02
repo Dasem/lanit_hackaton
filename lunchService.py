@@ -41,6 +41,15 @@ def getAllByUserId(userId):
 
     return result
 
+
 def getActiveByUserId(userId):
+    param = int(userId)
+    result = dao.getCursor().execute("""SELECT id, time, owner_id, place, description FROM lunch 
+                                        JOIN users ON users.lunch_id = lunch.id
+                                        WHERE users.user_id = ?""",
+                                 param).fetchone()
+    lunch = {
+        'id': result[0], 'time': result[1], 'owner_id': result[2], 'place': result[3], 'description': result[4]
+    }
 
-
+    return lunch
