@@ -9,7 +9,7 @@ import dao
 import userService
 import lunchService
 
-TOKEN = '997103341:AAHEFEGSl6LF4JMxGZus6cMzcQLlhsaHOVQ'  # t.me/jrinderBot
+TOKEN = '1052618109:AAGCUts9_VvN97wyx8sKpii07eedU0F4mxw'
 bot = telebot.TeleBot(TOKEN)
 
 cities = ['Москва', 'Пермь', 'Челябинск', 'Омск', 'Уфа', 'Ижевск']
@@ -22,7 +22,7 @@ proc = None
 
 def lunch_cleaner():
     now = datetime.datetime.now()
-    lunchs = []  # TODO: Заменить на запрос в БД
+    lunchs = lunchService.getAll()
     for lunch in lunchs:
         splitted = lunch.time.split(':')
         hours = int(splitted[0])
@@ -30,12 +30,12 @@ def lunch_cleaner():
         lunch_time = datetime.datetime.now()
         lunch_time.replace(hour=hours, minute=minutes, second=0)
         if (now - lunch_time).total_seconds() // 60 == 15:
-            users = []  # TODO: достать user_id всех пользаков, кто зареган в данном обеде(lunch_id)
+            users = userService.getAllByLunchId(lunch.id)
             for user in users:
-                bot.send_message(user.chat.id, "До обеда осталось 15 минут, встреча будет в " + lunch.place)
+                bot.send_message(user.chat.id, "До обеда осталось 15 минут, встреча будет в " + lunch.place + ", людей записалось: " + str(len(users)))
         if now > lunch_time:
             print('Шедулер типо удоляет обед')
-            # TODO: удалить ланч по id (lunch.id)
+            lunchService.delete(lunch.id)
 
 
 schedule.every().minute.do(lunch_cleaner)
@@ -78,6 +78,7 @@ def city_setter(call):
     bot.send_message(call.message.chat.id,
                      "Вы выбрали город " + city + ", теперь ваши обеды будут проходить именно здесь!")
 
+
 @bot.message_handler(commands=['help'])
 def send_welcome(message):
     name = message.from_user.first_name
@@ -88,7 +89,6 @@ def send_welcome(message):
 @bot.message_handler(commands=['lunch'])
 def lunch_start(message):
     keyboard = types.InlineKeyboardMarkup()
-    # ToDo запрос города и личной инфы
     keyboard.add(types.InlineKeyboardButton('Присоединиться', callback_data='join'),
                  types.InlineKeyboardButton('Предложить', callback_data='create'))
     bot.send_message(message.chat.id, "Вы хотите присоединиться к кому-то на обед или оставить свое предложение?",
@@ -97,7 +97,9 @@ def lunch_start(message):
 
 @bot.callback_query_handler(func=lambda call: call.data == 'join')
 def join_handler(call):
-    lunchs = []  # TODO: Взять ланчи по пользаку
+    bot.edit_message_reply_markup(call.message.chat.id, message_id=call.message.message_id, reply_markup='')
+    bot.send_message(call.message.chat.id, 'Выберите одно из предложений на обед')
+    lunchs = lunchService.getAllByUserId(call.message.chat.id)
     keyboard = types.InlineKeyboardMarkup()
     for lunch in lunchs:
         keyboard.add(types.InlineKeyboardButton(lunch.description + ' в ' + lunch.time, callback_data='lunch_id:' + str(lunch.id)))
@@ -107,17 +109,17 @@ def join_handler(call):
 @bot.callback_query_handler(func=lambda call: 'lunch_id' in call.data)
 def join_handler(call):
     lunch_id = call.data.split(':')[1]
-    # TODO: Присодениться к обеду (user_id, lunch_id)
+    userService.joinLunch(call.message.chat.id, lunch_id)
 
 
 @bot.callback_query_handler(func=lambda call: call.data == 'create')
 def create_handler(call):
+    bot.edit_message_reply_markup(call.message.chat.id, message_id=call.message.message_id, reply_markup='')
     msgTime = bot.send_message(call.message.chat.id, 'Введите время для обеда')
     bot.register_next_step_handler(msgTime, set_time)
 
 
 def set_time(message):
-    # ToDo проверить время
     cid = message.chat.id
     meetTime = message.text
     if len(meetTime) == 5:
@@ -128,7 +130,6 @@ def set_time(message):
             msgTime = bot.send_message(message.chat.id, 'Введите корректное время')
             bot.register_next_step_handler(msgTime, set_time)
         else:
-            # ToDo добавить время в БД
             msgPlace = bot.send_message(cid, 'Введите место встречи')
             bot.register_next_step_handler(msgPlace, set_place, meetTime)
 
@@ -140,7 +141,6 @@ def set_time(message):
 def set_place(message, meetTime):
     cid = message.chat.id
     meetPlace = message.text
-    # ToDo добавить место в БД
     msgGoal = bot.send_message(cid, 'Введите описание обеда (желаемая пища/место)')
     bot.register_next_step_handler(msgGoal, set_goal, meetTime, meetPlace)
 
@@ -148,22 +148,39 @@ def set_place(message, meetTime):
 def set_goal(message, meetTime, meetPlace):
     cid = message.chat.id
     meetGoal = message.text
-    # ToDo добавить место в БД
     keyboard = types.InlineKeyboardMarkup()
     keyboard.add(types.InlineKeyboardButton('Заполнить заново', callback_data='create'),
                  types.InlineKeyboardButton('Подтвердить', callback_data='accept'))
+    lunchService.add(meetTime,cid, meetPlace, meetGoal)
     bot.send_message(cid, 'Подтверждаете создание заявки: \n' +
-                     'Время встречи: ' + meetTime + '\n'
-                                                    'Место встречи: ' + meetPlace + '\n'
-                                                                                    'Место обеда: ' + meetGoal + '\n',
+                          'Время встречи: ' + meetTime + '\n'
+                          'Место встречи: ' + meetPlace + '\n'
+                          'Описание обеда: ' + meetGoal + '\n',
                      reply_markup=keyboard)
 
 
 @bot.callback_query_handler(func=lambda call: call.data == 'accept')
-def create_handler(call):
-    # TODO: Добавить обед(Lunch)
-    # TODO: 4. Присодениться к обеду (user_id, lunch_id)
-    bot.send_message(call.message.chat.id, 'Ваша заявка добавлена')
+def accept_handler(call):
+    cid = call.message.chat.id
+    bot.edit_message_reply_markup(cid, message_id=call.message.message_id, reply_markup='')
+    bot.send_message(cid, 'Ваша заявка добавлена')
+
+
+
+@bot.message_handler(commands=['check'])
+def lunch_start(message):
+    cid = message.chat.id
+    lunch = lunchService.getActiveByUserId(cid)
+    meetTime = lunch.time
+    meetPlace = lunch.place
+    meetGoal = lunch.description
+    if lunch is not None:
+        bot.send_message(cid, 'Подтверждаете создание заявки: \n' +
+                     'Время встречи: ' + meetTime + '\n'
+                     'Место встречи: ' + meetPlace + '\n'
+                     'Описание обеда: ' + meetGoal + '\n', )
+    else:
+        bot.send_message(cid, 'Вы не записаны на обед. Запишитесь или создайте заявку командой /lunch')
 
 
 def main():

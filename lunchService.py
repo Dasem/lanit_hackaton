@@ -23,6 +23,17 @@ def delete(lunchId):
     dao.getCursor().execute("""DELETE FROM lunch WHERE id = ?""", [param])
     dao.get_connection().commit()
 
+def getAll():
+    fromDb = dao.getCursor().execute("""SELECT id, time, owner_id, place, description FROM lunch""").fetchmany()
+    result = []
+
+    for row in fromDb:
+        lunch = {
+            'id': row[0], 'time': row[1], 'owner_id': row[2], 'place': row[3], 'description': row[4]
+        }
+        result.append(lunch)
+
+    return result
 
 def getAllByUserId(userId):
     param = int(userId)
