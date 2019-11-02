@@ -20,8 +20,7 @@ def handle_text(message):
     keyboard = types.InlineKeyboardMarkup()
     #ToDo запрос города и личной инфы
     keyboard.add(types.InlineKeyboardButton('Присоединиться', callback_data='join'),
-                 types.InlineKeyboardButton('Предложить', callback_data='add'),
-                 types.InlineKeyboardButton)
+                 types.InlineKeyboardButton('Предложить', callback_data='add'))
     bot.send_message(message.chat.id, "Вы хотите присоединиться к кому-то на обед или оставить свое предложение?",
                      reply_markup=keyboard)
 
@@ -51,15 +50,18 @@ def query_handler(call):
     if call.data == 'cafe':
         keyboard = types.InlineKeyboardMarkup()
         #ToDo брать предпочтения по базе
-        keyboard.add(types.InlineKeyboardButton('Пицца', callback_data='rest'),
-                     types.InlineKeyboardButton('Суши', callback_data='cafe'),
-                     types.InlineKeyboardButton('Суши', callback_data='cafe'),
-                     types.InlineKeyboardButton('Суши', callback_data='cafe'),
-                     types.InlineKeyboardButton('Суши', callback_data='cafe'),
-                     types.InlineKeyboardButton('Суши', callback_data='cafe'),
-                     types.InlineKeyboardButton('Суши', callback_data='cafe'),
-                     types.InlineKeyboardButton('Суши', callback_data='cafe'))
+        keyboard.add(types.InlineKeyboardButton('Пицца', callback_data='pref'),
+                     types.InlineKeyboardButton('Суши', callback_data='pref'),
+                     types.InlineKeyboardButton('Суши', callback_data='pref'),
+                     types.InlineKeyboardButton('Суши', callback_data='pref'),
+                     types.InlineKeyboardButton('Суши', callback_data='pref'),
+                     types.InlineKeyboardButton('Суши', callback_data='pref'),
+                     types.InlineKeyboardButton('Суши', callback_data='pref'),
+                     types.InlineKeyboardButton('Суши', callback_data='pref'))
         bot.send_message(call.message.chat.id, "Какие у вас предпочтения?",
                          reply_markup=keyboard)
+    if call.data == 'pref':
+            bot.send_message(call.message.chat.id, 'Мы учтем ваши пожелания, а теперь выберите время в которое вы бы хотели пообедать')
+            #ToDo вбивает время, заявка закончилась
 
 bot.polling()
