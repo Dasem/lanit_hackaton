@@ -2,4 +2,3 @@ pip install python-telegram-bot
 pip install telegram
 pip install requirements
 pip install schedule
-pip install SQLAlchemy
