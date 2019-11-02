@@ -1,6 +1,10 @@
 import telebot
 from telebot.types import Message
 from telebot import types
+from threading import Thread
+import time
+import schedule
+import datetime
 
 TOKEN = '1052618109:AAGCUts9_VvN97wyx8sKpii07eedU0F4mxw'
 bot = telebot.TeleBot(TOKEN)
@@ -11,6 +15,36 @@ cities = ['Москва', 'Пермь', 'Челябинск', 'Омск', 'Уф�
 users = dict()
 
 proc = None
+
+
+def lunch_cleaner():
+    now = datetime.datetime.now()
+    lunchs = []  # TODO: Заменить на запрос в БД
+    for lunch in lunchs:
+        splitted = lunch.time.split(':')
+        hours = int(splitted[0])
+        minutes = int(splitted[1])
+        lunch_time = datetime.datetime.now()
+        lunch_time.replace(hour=hours, minute=minutes, second=0)
+        if (now - lunch_time).total_seconds() // 60 == 15:
+            users = []  # TODO: достать user_id всех пользаков, кто зареган в данном обеде(lunch_id)
+            for user in users:
+                bot.send_message(user.chat.id, "До обеда осталось 15 минут, встреча будет в " + lunch.place)
+        if now > lunch_time:
+            print('Шедулер типо удоляет обед')
+            # TODO: удалить ланч по id (lunch.id)
+
+
+schedule.every().minute.do()
+
+
+def shedule_helper():
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+
+
+alarmer = Thread(target=shedule_helper, daemon=True)
 
 
 @bot.message_handler(func=lambda message: message.chat.id not in users)
