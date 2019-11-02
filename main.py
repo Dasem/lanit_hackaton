@@ -84,71 +84,77 @@ def send_welcome(message):
 
 
 @bot.message_handler(commands=['lunch'])
-def handle_text(message):
+def lunch_start(message):
     keyboard = types.InlineKeyboardMarkup()
     # ToDo запрос города и личной инфы
     keyboard.add(types.InlineKeyboardButton('Присоединиться', callback_data='join'),
-                 types.InlineKeyboardButton('Предложить', callback_data='add'))
+                 types.InlineKeyboardButton('Предложить', callback_data='create'))
     bot.send_message(message.chat.id, "Вы хотите присоединиться к кому-то на обед или оставить свое предложение?",
                      reply_markup=keyboard)
 
 
 @bot.callback_query_handler(func=lambda call: call.data == 'join')
-def query_handler(call):
-    bot.send_message(call.message.chat.id, 'Выберите одно из предложениц на обед')
+def join_handler(call):
+    bot.send_message(call.message.chat.id, 'Выберите одно из предложений на обед')
 
 
-@bot.callback_query_handler(func=lambda call: call.data == 'add')
-def query_handler(call):
+@bot.callback_query_handler(func=lambda call: call.data == 'create')
+def create_handler(call):
+    msgTime = bot.send_message(call.message.chat.id, 'Введите время для обеда')
+    bot.register_next_step_handler(msgTime, set_time)
+
+
+def set_time(message):
+    # ToDo проверить время
+    cid = message.chat.id
+    meetTime = message.text
+    if len(meetTime) == 5:
+        ch = [char for char in meetTime]
+        hour = ch[0] + ch[1]
+        min = ch[3] + ch[4]
+        if hour > '24' or hour < '0' or min > '59' or min < '0' or ch[2] != ':':
+            msgTime = bot.send_message(message.chat.id, 'Введите корректное время')
+            bot.register_next_step_handler(msgTime, set_time)
+        else:
+            # ToDo добавить время в БД
+            msgPlace = bot.send_message(cid, 'Введите место встречи')
+            bot.register_next_step_handler(msgPlace, set_place, meetTime)
+
+    else:
+        msgTime = bot.send_message(message.chat.id, 'Введите корректное время')
+        bot.register_next_step_handler(msgTime, set_time)
+
+
+def set_place(message, meetTime):
+    cid = message.chat.id
+    meetPlace = message.text
+    # ToDo добавить место в БД
+    msgGoal = bot.send_message(cid, 'Введите место для обеда')
+    bot.register_next_step_handler(msgGoal, set_goal, meetTime, meetPlace)
+
+
+def set_goal(message, meetTime, meetPlace):
+    cid = message.chat.id
+    meetGoal = message.text
+    # ToDo добавить место в БД
     keyboard = types.InlineKeyboardMarkup()
-    keyboard.add(types.InlineKeyboardButton('Обед с собой', callback_data='stay'),
-                 types.InlineKeyboardButton('Пойти на обед', callback_data='go'))
-    bot.send_message(call.message.chat.id, "У вас обед с собой или вы хотели бы пойти куда-нибудь?",
+    keyboard.add(types.InlineKeyboardButton('Заполнить заново', callback_data='create'),
+                 types.InlineKeyboardButton('Подтвердить', callback_data='accept'))
+    bot.send_message(cid, 'Подтверждаете создание заявки: \n' +
+                          'Время встречи: ' + meetTime + '\n'
+                          'Место встречи: ' + meetPlace + '\n'
+                          'Место обеда: ' + meetGoal + '\n',
                      reply_markup=keyboard)
 
 
-@bot.callback_query_handler(func=lambda call: call.data == 'stay')
-def query_handler(call):
-    bot.send_message(call.message.chat.id, 'Выберите время в которое вы бы хотели пообедать')
-    # ToDo вбивает время, заявка закончилась будем искать тех кто тоже взял с собой
+@bot.callback_query_handler(func=lambda call: call.data == 'accept')
+def create_handler(call):
+    bot.send_message(call.message.chat.id, 'Ваша заявка добавлена')
 
 
-@bot.callback_query_handler(func=lambda call: call.data == 'go')
-def query_handler(call):
-    keyboard = types.InlineKeyboardMarkup()
-    keyboard.add(types.InlineKeyboardButton('Столовая(первое, второе)', callback_data='rest'),
-                 types.InlineKeyboardButton('Кафе, фастфуд', callback_data='cafe'))
-    bot.send_message(call.message.chat.id, "Куда бы вы хотели пойти?",
-                     reply_markup=keyboard)
+def main():
+    bot.polling()
 
 
-@bot.callback_query_handler(func=lambda call: call.data == 'rest')
-def query_handler(call):
-    bot.send_message(call.message.chat.id, 'Выберите время в которое вы бы хотели пообедать')
-    # ToDo вбивает время, заявка закончилась будем искать тех кто тоже хочет в столовую
-
-
-@bot.callback_query_handler(func=lambda call: call.data == 'cafe')
-def query_handler(call):
-    keyboard = types.InlineKeyboardMarkup()
-    # ToDo брать предпочтения по базе
-    keyboard.add(types.InlineKeyboardButton('Пицца', callback_data='pref'),
-                 types.InlineKeyboardButton('Суши', callback_data='pref'),
-                 types.InlineKeyboardButton('Суши', callback_data='pref'),
-                 types.InlineKeyboardButton('Суши', callback_data='pref'),
-                 types.InlineKeyboardButton('Суши', callback_data='pref'),
-                 types.InlineKeyboardButton('Суши', callback_data='pref'),
-                 types.InlineKeyboardButton('Суши', callback_data='pref'),
-                 types.InlineKeyboardButton('Суши', callback_data='pref'))
-    bot.send_message(call.message.chat.id, "Какие у вас предпочтения?",
-                     reply_markup=keyboard)
-
-
-@bot.callback_query_handler(func=lambda call: call.data == 'pref')
-def query_handler(call):
-    bot.send_message(call.message.chat.id,
-                     'Мы учтем ваши пожелания, а теперь выберите время в которое вы бы хотели пообедать')
-    # ToDo вбивает время, заявка закончилась
-
-
-bot.polling()
+if __name__ == '__main__':
+    main()
