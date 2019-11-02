@@ -1,6 +1,18 @@
+#Сервис, предоставляющий CRUD методы по работе с таблицей Пользователь
+#Service provides CRUD operation with table Users
+
+# imports
 import dao;
 
 
+# functions
+"""
+    Добавляет информацию об пользователе
+    - user_id - идентфикатор пользователя
+    - city - город нахождения пользователя
+    - lunch_id - идентификатор, выбранного обеда
+    Add information about user
+ """
 def add(user_id, city, lunch_id):
     dao.getCursor().execute("""INSERT INTO users (user_id, city, lunch_id) VALUES (?, ?, ?)""",
                             (user_id, city, lunch_id))
