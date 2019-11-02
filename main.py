@@ -7,6 +7,7 @@ import schedule
 import datetime
 import dao
 import userService
+import lunchService
 
 TOKEN = '997103341:AAHEFEGSl6LF4JMxGZus6cMzcQLlhsaHOVQ'  # t.me/jrinderBot
 bot = telebot.TeleBot(TOKEN)
@@ -74,14 +75,8 @@ def city_setter(call):
     global users
     city = call.data.split(':')[1]
     users[call.message.chat.id] = city
-    userService.add(int(3), "city", int(-1))
-    s = []
-    s.append("Вы выбрали город ")
-    s.append(city)
-    s.append(", теперь ваши обеды будут проходить именно здесь!")
-
-    userService.findById(int(3))
-    bot.send_message(call.message.chat.id)
+    bot.send_message(call.message.chat.id,
+                     "Вы выбрали город " + city + ", теперь ваши обеды будут проходить именно здесь!")
 
 @bot.message_handler(commands=['help'])
 def send_welcome(message):
@@ -166,6 +161,8 @@ def set_goal(message, meetTime, meetPlace):
 
 @bot.callback_query_handler(func=lambda call: call.data == 'accept')
 def create_handler(call):
+    # TODO: Добавить обед(Lunch)
+    # TODO: 4. Присодениться к обеду (user_id, lunch_id)
     bot.send_message(call.message.chat.id, 'Ваша заявка добавлена')
 
 

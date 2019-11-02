@@ -22,3 +22,11 @@ def leaveLunch(user_id):
     # TODO добавить проверку не пытаемся ли мы выйти из собственного обеда
     dao.getCursor().execute("""UPDATE users SET lunch_id = ? WHERE user_id = ?""", (-1, user_id))
     dao.get_connection().commit()
+
+
+#Возвращает массив массивов
+def getAllByLunchId(lunchId):
+    param = int(lunchId)
+    result = dao.getCursor().execute("""SELECT user_id FROM users WHERE lunch_id = ?""",
+                                     [param]).fetchall()
+    return result
