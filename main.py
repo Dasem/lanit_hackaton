@@ -117,4 +117,9 @@ def query_handler(call):
     # ToDo вбивает время, заявка закончилась
 
 
-bot.polling()
+def main():
+    bot.polling()
+
+
+if __name__ == '__main__':
+    main()
