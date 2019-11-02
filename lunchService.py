@@ -35,7 +35,7 @@ def delete(lunchId):
     dao.get_connection().commit()
 
 def getAll():
-    fromDb = dao.getCursor().execute("""SELECT id, time, owner_id, place, description FROM lunch""").fetchmany()
+    fromDb = dao.getCursor().execute("""SELECT id, time, owner_id, place, description FROM lunch""").fetchall()
     result = []
 
     for row in fromDb:
@@ -51,7 +51,7 @@ def getAllByUserId(userId):
     fromDb = dao.getCursor().execute("""SELECT id, time, owner_id, place, description FROM lunch 
                                         JOIN users ON lunch.owner_id = users.user_id
                                         WHERE city in (SELECT city from users where user_id = ?)""",
-                                     [param]).fetchmany()
+                                     [param]).fetchall()
 
     result = []
 
@@ -70,6 +70,8 @@ def getActiveByUserId(userId):
                                         JOIN users ON users.lunch_id = lunch.id
                                         WHERE users.user_id = ?""",
                                  [param]).fetchone()
+    if result is None:
+        return None
     lunch = {
         'id': result[0], 'time': result[1], 'owner_id': result[2], 'place': result[3], 'description': result[4]
     }
