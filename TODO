@@ -65,7 +65,7 @@
     Обед Lunch
         user_id
         time
-        owner - ид пользователя
+        owner_id - ид пользователя
         place
         description
 
