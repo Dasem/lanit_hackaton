@@ -19,4 +19,5 @@ def joinLunch(user_id, lunch_id):
 def delete(lunchId):
     param = int(lunchId)
     dao.getCursor().execute("""DELETE FROM lunch WHERE id = ?""", [param])
+    dao.get_connection().commit()
 
