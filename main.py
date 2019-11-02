@@ -45,7 +45,7 @@ def query_handler(call):
                          reply_markup=keyboard)
     if call.data == 'rest':
         bot.send_message(call.message.chat.id, 'Выберите время в которое вы бы хотели пообедать')
-        # вбивает время, заявка закончилась будем искать тех кто тоже взял с собой
+        # вбивает время, заявка закончилась будем искать тех кто тоже хочет в столовую
     if call.data == 'cafe':
         keyboard = types.InlineKeyboardMarkup()
         keyboard.add(types.InlineKeyboardButton('Пицца', callback_data='rest'),
