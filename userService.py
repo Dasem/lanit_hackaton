@@ -16,3 +16,9 @@ def findById(userId):
 def joinLunch(user_id, lunch_id):
     dao.getCursor().execute("""UPDATE users SET lunch_id = ? WHERE user_id = ?""", (lunch_id, user_id))
     dao.get_connection().commit()
+
+
+def leaveLunch(user_id):
+    # TODO добавить проверку не пытаемся ли мы выйти из собственного обеда
+    dao.getCursor().execute("""UPDATE users SET lunch_id = ? WHERE user_id = ?""", (-1, user_id))
+    dao.get_connection().commit()
