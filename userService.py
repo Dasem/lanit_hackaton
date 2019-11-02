@@ -11,3 +11,8 @@ def findById(userId):
                                      [int(userId)]).fetchone()
     user = {'user_id': result[0], 'city': result[1], 'lunch_id': result[2]}
     return user
+
+
+def joinLunch(user_id, lunch_id):
+    dao.getCursor().execute("""UPDATE users SET lunch_id = ? WHERE user_id = ?""", (lunch_id, user_id))
+    dao.get_connection().commit()
