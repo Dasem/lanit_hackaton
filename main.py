@@ -159,6 +159,8 @@ def set_goal(message, meetTime, meetPlace):
 
 @bot.callback_query_handler(func=lambda call: call.data == 'accept')
 def create_handler(call):
+    # TODO: Добавить обед(Lunch)
+    # TODO: 4. Присодениться к обеду (user_id, lunch_id)
     bot.send_message(call.message.chat.id, 'Ваша заявка добавлена')
 
 
