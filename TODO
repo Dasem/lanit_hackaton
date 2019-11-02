@@ -61,9 +61,10 @@
     Пользователь User
         user_id
         city
+        lunch_id
 
     Обед Lunch
-        user_id
+        id
         time
         owner - ид пользователя
         place
