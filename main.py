@@ -80,7 +80,7 @@ def city_setter(call):
 def send_welcome(message):
     name = message.from_user.first_name
     bot.send_message(message.chat.id,
-                     "Приветствую " + name + ", я бот для поиска компании для обедов. Если хочешь найти себе компанию, чтобы вместе вкусно поесть, ты попал по адресу.Всё что нужно это написать мне /lunch")
+                     "Приветствую " + name + ", я бот поиска компании для обедов. Если хочешь найти себе компанию, чтобы вместе вкусно поесть, ты попал по адресу.Всё что нужно это написать мне /lunch")
 
 
 @bot.message_handler(commands=['lunch'])
@@ -95,7 +95,17 @@ def lunch_start(message):
 
 @bot.callback_query_handler(func=lambda call: call.data == 'join')
 def join_handler(call):
-    bot.send_message(call.message.chat.id, 'Выберите одно из предложений на обед')
+    lunchs = []  # TODO: Взять ланчи по пользаку
+    keyboard = types.InlineKeyboardMarkup()
+    for lunch in lunchs:
+        keyboard.add(types.InlineKeyboardButton(lunch.description + ' в ' + lunch.time, callback_data='lunch_id:' + str(lunch.id)))
+    bot.send_message(call.message.chat.id, 'Выберите одно из предложений на обед', reply_markup=keyboard)
+
+
+@bot.callback_query_handler(func=lambda call: 'lunch_id' in call.data)
+def join_handler(call):
+    lunch_id = call.data.split(':')[1]
+    # TODO: Присодениться к обеду (user_id, lunch_id)
 
 
 @bot.callback_query_handler(func=lambda call: call.data == 'create')
@@ -129,7 +139,7 @@ def set_place(message, meetTime):
     cid = message.chat.id
     meetPlace = message.text
     # ToDo добавить место в БД
-    msgGoal = bot.send_message(cid, 'Введите место для обеда')
+    msgGoal = bot.send_message(cid, 'Введите описание обеда (желаемая пища/место)')
     bot.register_next_step_handler(msgGoal, set_goal, meetTime, meetPlace)
 
 
@@ -141,9 +151,9 @@ def set_goal(message, meetTime, meetPlace):
     keyboard.add(types.InlineKeyboardButton('Заполнить заново', callback_data='create'),
                  types.InlineKeyboardButton('Подтвердить', callback_data='accept'))
     bot.send_message(cid, 'Подтверждаете создание заявки: \n' +
-                          'Время встречи: ' + meetTime + '\n'
-                          'Место встречи: ' + meetPlace + '\n'
-                          'Место обеда: ' + meetGoal + '\n',
+                     'Время встречи: ' + meetTime + '\n'
+                                                    'Место встречи: ' + meetPlace + '\n'
+                                                                                    'Место обеда: ' + meetGoal + '\n',
                      reply_markup=keyboard)
 
 
