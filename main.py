@@ -74,7 +74,6 @@ def city_setter(call):
     global users
     city = call.data.split(':')[1]
     users[call.message.chat.id] = city
-    userService.add(int(3), "city", int(-1))
     bot.send_message(call.message.chat.id,
                      "Вы выбрали город " + city + ", теперь ваши обеды будут проходить именно здесь!")
 
