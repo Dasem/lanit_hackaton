@@ -4,17 +4,28 @@ import dao;
 def findById(lunch_id):
     param = int(lunch_id)
     result = dao.getCursor().execute("""SELECT id, time, owner_id, place, description FROM lunch WHERE id = ?""",
-                                     param).fetchone()
+                                     [param]).fetchone()
+
     lunch = {
         'id': result[0], 'time': result[1], 'owner_id': result[2], 'place': result[3], 'description': result[4]
     }
 
     return lunch
 
+def findByOwnerId(owner_id):
+    param = int(owner_id)
+    result = dao.getCursor().execute("""SELECT id, time, owner_id, place, description FROM lunch WHERE owner_id = ?""",
+                                     [param]).fetchone()
+
+    lunch = {
+        'id': result[0], 'time': result[1], 'owner_id': result[2], 'place': result[3], 'description': result[4]
+    }
+
+    return lunch
 
 def add(time, owner_id, place, description):
     dao.getCursor().execute("""INSERT INTO lunch (time, owner_id, place, description) VALUES (?, ?, ?, ?)""",
-                            (time, owner_id, place, description))
+                            (time, int(owner_id), place, description))
     dao.get_connection().commit()
 
 
