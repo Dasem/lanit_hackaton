@@ -12,14 +12,16 @@ proc = None
 def send_welcome(message):
     name = message.from_user.first_name
     bot.send_message(message.chat.id,
-                     "Приветствую " + name + ", я бот для поиска компании для обедов. Если хочешь найти себе компанию, чтобы вместе вкусно поесть, ты попал по адресу.Всё что нужно это написать мне /dinner")
+                     "Приветствую " + name + ", я бот для поиска компании для обедов. Если хочешь найти себе компанию, чтобы вместе вкусно поесть, ты попал по адресу.Всё что нужно это написать мне /lunch")
 
 
-@bot.message_handler(commands=['dinner'])
+@bot.message_handler(commands=['lunch'])
 def handle_text(message):
     keyboard = types.InlineKeyboardMarkup()
+    #ToDo запрос города и личной инфы
     keyboard.add(types.InlineKeyboardButton('Присоединиться', callback_data='join'),
-                 types.InlineKeyboardButton('Предложить', callback_data='add'))
+                 types.InlineKeyboardButton('Предложить', callback_data='add'),
+                 types.InlineKeyboardButton)
     bot.send_message(message.chat.id, "Вы хотите присоединиться к кому-то на обед или оставить свое предложение?",
                      reply_markup=keyboard)
 
@@ -36,7 +38,7 @@ def query_handler(call):
                          reply_markup=keyboard)
     if call.data == 'stay':
         bot.send_message(call.message.chat.id, 'Выберите время в которое вы бы хотели пообедать')
-        # вбивает время, заявка закончилась будем искать тех кто тоже взял с собой
+        #ToDo вбивает время, заявка закончилась будем искать тех кто тоже взял с собой
     if call.data == 'go':
         keyboard = types.InlineKeyboardMarkup()
         keyboard.add(types.InlineKeyboardButton('Столовая(первое, второе)', callback_data='rest'),
@@ -45,9 +47,10 @@ def query_handler(call):
                          reply_markup=keyboard)
     if call.data == 'rest':
         bot.send_message(call.message.chat.id, 'Выберите время в которое вы бы хотели пообедать')
-        # вбивает время, заявка закончилась будем искать тех кто тоже хочет в столовую
+        #ToDo вбивает время, заявка закончилась будем искать тех кто тоже хочет в столовую
     if call.data == 'cafe':
         keyboard = types.InlineKeyboardMarkup()
+        #ToDo брать предпочтения по базе
         keyboard.add(types.InlineKeyboardButton('Пицца', callback_data='rest'),
                      types.InlineKeyboardButton('Суши', callback_data='cafe'),
                      types.InlineKeyboardButton('Суши', callback_data='cafe'),
