@@ -5,8 +5,10 @@ from threading import Thread
 import time
 import schedule
 import datetime
+import dao
+import userService
 
-TOKEN = '1052618109:AAGCUts9_VvN97wyx8sKpii07eedU0F4mxw'
+TOKEN = '997103341:AAHEFEGSl6LF4JMxGZus6cMzcQLlhsaHOVQ'  # t.me/jrinderBot
 bot = telebot.TeleBot(TOKEN)
 
 cities = ['Москва', 'Пермь', 'Челябинск', 'Омск', 'Уфа', 'Ижевск']
@@ -74,7 +76,6 @@ def city_setter(call):
     users[call.message.chat.id] = city
     bot.send_message(call.message.chat.id,
                      "Вы выбрали город " + city + ", теперь ваши обеды будут проходить именно здесь!")
-
 
 @bot.message_handler(commands=['help'])
 def send_welcome(message):
@@ -165,6 +166,7 @@ def create_handler(call):
 
 
 def main():
+    dao.initDbTables()
     bot.polling()
 
 
