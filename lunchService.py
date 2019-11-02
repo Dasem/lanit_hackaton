@@ -2,8 +2,9 @@ import dao;
 
 
 def findById(lunch_id):
+    param = int(lunch_id)
     result = dao.getCursor().execute("""SELECT id, time, owner_id, place, description FROM lunch WHERE id = ?""",
-                                     lunch_id).fetchone()
+                                     param).fetchone()
     lunch = {
         'id': result[0], 'time': result[1], 'owner_id': result[2], 'place': result[3], 'description': result[4]
     }
@@ -24,7 +25,7 @@ def delete(lunchId):
 
 
 def getAllByUserId(userId):
-    param = userId
+    param = int(userId)
     fromDb = dao.getCursor().execute("""SELECT id, time, owner_id, place, description FROM lunch 
                                         JOIN users ON lunch.owner_id = users.user_id
                                         WHERE city in (SELECT city from users where user_id = ?)""",
@@ -41,4 +42,5 @@ def getAllByUserId(userId):
     return result
 
 def getActiveByUserId(userId):
+
 
