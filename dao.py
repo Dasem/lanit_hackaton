@@ -29,6 +29,6 @@ def close_connection(connection):
 
 def initDbTables():
     getCursor().execute(
-        """CREATE TABLE IF NOT EXISTS lunch (id integer PRIMARY KEY, time VARCHAR, owner_id integer, place VARCHAR, description VARCHAR );""")
+        """CREATE TABLE IF NOT EXISTS lunch (id integer PRIMARY KEY AUTOINCREMENT, time VARCHAR, owner_id integer, place VARCHAR, description VARCHAR );""")
     getCursor().execute(
         """CREATE TABLE IF NOT EXISTS users (user_id integer PRIMARY KEY, city VARCHAR, lunch_id integer, CONSTRAINT fkLunch FOREIGN KEY (lunch_id) REFERENCES lunch (id));""")

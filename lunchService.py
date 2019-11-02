@@ -2,7 +2,9 @@ import dao;
 
 
 def findById(lunch_id):
-    result = dao.getCursor().execute("""SELECT id, time, owner_id, place, description FROM lunch WHERE id = ?""", lunch_id).fetchone()
+    param = int(lunch_id)
+    result = dao.getCursor().execute("""SELECT id, time, owner_id, place, description FROM lunch WHERE id = ?""",
+                                     param).fetchone()
     lunch = {
         'id': result[0], 'time': result[1], 'owner_id': result[2], 'place': result[3], 'description': result[4]
     }
@@ -10,9 +12,9 @@ def findById(lunch_id):
     return lunch
 
 
-def add(id, time, owner_id, place, description):
-    dao.getCursor().execute("""INSERT INTO lunch (id, time, owner_id, place, description) VALUES (?, ?, ?, ?)""",
-                            (id, time, owner_id, place, description))
+def add(time, owner_id, place, description):
+    dao.getCursor().execute("""INSERT INTO lunch (time, owner_id, place, description) VALUES (?, ?, ?, ?)""",
+                            (time, owner_id, place, description))
     dao.get_connection().commit()
 
 
@@ -22,8 +24,13 @@ def delete(lunchId):
     dao.get_connection().commit()
 
 
-def getAllByCity(city):
-    fromDb = dao.getCursor().execute("""SELECT id, time, owner_id, place, description FROM lunch WHERE city = ?""", city).fetchmany()
+def getAllByUserId(userId):
+    param = int(userId)
+    fromDb = dao.getCursor().execute("""SELECT id, time, owner_id, place, description FROM lunch 
+                                        JOIN users ON lunch.owner_id = users.user_id
+                                        WHERE city in (SELECT city from users where user_id = ?)""",
+                                     [param]).fetchmany()
+
     result = []
 
     for row in fromDb:
@@ -33,3 +40,7 @@ def getAllByCity(city):
         result.append(lunch)
 
     return result
+
+def getActiveByUserId(userId):
+
+
