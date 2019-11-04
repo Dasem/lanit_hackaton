@@ -7,7 +7,7 @@ import dao
 import userService
 import lunchService
 
-TOKEN = '499956170:AAFmRzROTTFurqEqf43I3ZixwPAmvODTfVI'
+TOKEN = '997103341:AAHEFEGSl6LF4JMxGZus6cMzcQLlhsaHOVQ'
 bot = telebot.TeleBot(TOKEN)
 
 cities = ['Москва', 'Пермь', 'Челябинск', 'Омск', 'Уфа', 'Ижевск']
