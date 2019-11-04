@@ -18,6 +18,11 @@ def add(user_id, city, lunch_id):
                             (user_id, city, lunch_id))
     dao.get_connection().commit()
 
+def updateCity(user_id, city):
+    dao.getCursor().execute("""UPDATE users SET city = ?, lunch_id = null WHERE user_id = ?""",
+                            (city, user_id))
+    dao.get_connection().commit()
+
 """
     Возвращает информацию о пользователе по идентфикатору
     - userId - идентификатор пользователя
