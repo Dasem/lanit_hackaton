@@ -7,10 +7,28 @@ import dao
 import userService
 import lunchService
 
-TOKEN = '997103341:AAHEFEGSl6LF4JMxGZus6cMzcQLlhsaHOVQ'
+TOKEN = '499956170:AAFmRzROTTFurqEqf43I3ZixwPAmvODTfVI'
 bot = telebot.TeleBot(TOKEN)
 
 cities = ['Москва', 'Пермь', 'Челябинск', 'Омск', 'Уфа', 'Ижевск']
+
+
+def correct_hour_by_city(hour, city):
+    result = hour
+    if city == 'Москва':
+        result = hour + 3
+    elif city == 'Пермь':
+        result = hour + 5
+    elif city == 'Челябинск':
+        result = hour + 5
+    elif city == 'Омск':
+        result = hour + 6
+    elif city == 'Уфа':
+        result = hour + 5
+    elif city == 'Ижевск':
+        result = hour + 4
+    return result if result < 24 else result - 24
+
 
 # {chat_id: city}
 users = dict()
@@ -21,14 +39,13 @@ proc = None
 def lunch_cleaner():
     time.sleep(5)
     while True:
-        now = datetime.datetime.now()
         lunchs = lunchService.getAll()
         for lunch in lunchs:
+            now = now_time_by_city(userService.findById(lunch['owner_id'])['city'])
             splitted = lunch['time'].split(':')
             hours = int(splitted[0])
             minutes = int(splitted[1])
-            lunch_time = datetime.datetime.now()
-            lunch_time = lunch_time.replace(hour=hours, minute=minutes, second=0)
+            lunch_time = now.replace(hour=hours, minute=minutes, second=0)
             if (lunch_time - now).total_seconds() // 60 == 15:
                 users_ids = userService.getAllByLunchId(lunch['id'])
                 for user in users_ids:
@@ -53,6 +70,12 @@ def lunch_cleaner():
         time.sleep(60)
 
 
+def now_time_by_city(city):
+    now = datetime.datetime.now(datetime.timezone.utc)
+    now = now.replace(hour=correct_hour_by_city(now.hour, city))
+    return now
+
+
 Thread(target=lunch_cleaner, daemon=True).start()
 
 
@@ -64,6 +87,11 @@ def kit_start(message):
 @bot.message_handler(commands=['start'])
 def city_change(message):
     select_city(message)
+
+
+@bot.message_handler(commands=['time'])
+def get_time(message):
+    bot.send_message(message.chat.id, 'Сейчас времени: ' + now_time_by_city(users[message.chat.id]).strftime('%H:%M'))
 
 
 def select_city(message):
@@ -146,7 +174,9 @@ def join_handler(call):
 def create_handler(call):
     try:
         bot.edit_message_reply_markup(call.message.chat.id, message_id=call.message.message_id, reply_markup='')
-        msgTime = bot.send_message(call.message.chat.id, 'Введите время для обеда (формат ЧЧ:ММ)')
+        msgTime = bot.send_message(call.message.chat.id, 'Введите время для обеда (формат ЧЧ:ММ)' +
+                                   '--- Сейчас времени: ' + now_time_by_city(users[call.message.chat.id]).strftime(
+            '%H:%M'))
         bot.register_next_step_handler(msgTime, set_time)
     except:
         print('У мог бы упасть')
@@ -194,10 +224,11 @@ def set_goal(message, meetTime, meetPlace):
         lunchService.add(meetTime, cid, meetPlace, meetGoal)
         lunch = lunchService.findByOwnerId(cid)
         userService.joinLunch(cid, lunch['id'])
-        bot.send_message(cid, 'Подтверждаете создание заявки: \n' +
+        bot.send_message(cid, 'Подтверждаете создание заявки:\n\n' +
                          'Время встречи: ' + meetTime + '\n' +
                          'Место встречи: ' + meetPlace + '\n' +
-                         'Описание обеда: ' + meetGoal + '\n',
+                         'Описание обеда: ' + meetGoal + '\n' +
+                         '--- Сейчас времени: ' + now_time_by_city(users[message.chat.id]).strftime('%H:%M'),
                          reply_markup=keyboard)
     except:
         print('У мог бы упасть')
@@ -208,7 +239,8 @@ def accept_handler(call):
     try:
         cid = call.message.chat.id
         bot.edit_message_reply_markup(cid, message_id=call.message.message_id, reply_markup='')
-        bot.send_message(cid, 'Ваша заявка добавлена')
+        bot.send_message(cid,
+                         'Ваша заявка добавлена, вы всегда можете посмотреть сколько сейчас времени командой /time')
     except:
         print('У мог бы упасть')
 
@@ -222,10 +254,11 @@ def lunch_start(message):
             meetTime = lunch['time']
             meetPlace = lunch['place']
             meetGoal = lunch['description']
-            bot.send_message(cid, 'Подтверждаете создание заявки: \n' +
-                             'Время встречи: ' + meetTime + '\n'
-                                                            'Место встречи: ' + meetPlace + '\n'
-                                                                                            'Описание обеда: ' + meetGoal + '\n', )
+            bot.send_message(cid, 'Вы записаны на обед: \n\n' +
+                             'Время встречи: ' + meetTime + '\n' +
+                             'Место встречи: ' + meetPlace + '\n' +
+                             'Описание обеда: ' + meetGoal + '\n' +
+                             '--- Сейчас времени: ' + now_time_by_city(users[message.chat.id]).strftime('%H:%M'))
         else:
             bot.send_message(cid, 'Вы не записаны на обед. Запишитесь или создайте заявку командой /lunch')
     except:
